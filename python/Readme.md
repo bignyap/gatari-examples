@@ -6,6 +6,7 @@ This document describes how Gatari integrates with a FastAPI app using a custom 
 
 ## 📊 High-Level Flow
 
+```mermaid
 flowchart TD
     A[📥 Incoming HTTP Request] --> B[🧩 Gatari Middleware (dispatch())]
     B --> C[🔐 Step 1: Validate Auth Token<br/>(_extract_token)]
@@ -15,6 +16,7 @@ flowchart TD
     D -->|❌ Unauthorized| G[🚫 Reject Request (403 Forbidden)]
     F --> H[🧾 Step 4: Record Usage<br/>(_record_usage)]
     H --> I[✅ Return HTTP Response]
+```
 
 ---
 
