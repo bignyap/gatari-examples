@@ -8,14 +8,14 @@ This document describes how Gatari integrates with a FastAPI app using a custom 
 
 ```mermaid
 flowchart TD
-    A[📥 Incoming HTTP Request] --> B[🧩 Gatari Middleware (dispatch())]
-    B --> C[🔐 Step 1: Validate Auth Token<br/>(_extract_token)]
-    C -->|✅ Valid| D[🔓 Step 2: Validate Access<br/>(_validate_with_gatekeeper)]
-    C -->|❌ Invalid| E[🚫 Reject Request (401 Unauthorized)]
-    D -->|✅ Authorized| F[📡 Step 3: Call Route Handler<br/>(call_next)]
-    D -->|❌ Unauthorized| G[🚫 Reject Request (403 Forbidden)]
-    F --> H[🧾 Step 4: Record Usage<br/>(_record_usage)]
-    H --> I[✅ Return HTTP Response]
+    A[Incoming HTTP Request] --> B[Gatari Middleware (dispatch())]
+    B --> C[Step 1: Validate Auth Token (_extract_token)]
+    C -->|Valid| D[Step 2: Validate Access (_validate_with_gatekeeper)]
+    C -->|Invalid| E[Reject Request (401 Unauthorized)]
+    D -->|Authorized| F[Step 3: Call Route Handler (call_next)]
+    D -->|Unauthorized| G[Reject Request (403 Forbidden)]
+    F --> H[Step 4: Record Usage (_record_usage)]
+    H --> I[Return HTTP Response]
 ```
 
 ---
