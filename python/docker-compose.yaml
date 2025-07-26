@@ -1,0 +1,119 @@
+services:
+  go-admin:
+    container_name: go-admin
+    image: bignya/go-admin:latest
+    restart: always
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      ENVIRONMENT: "dev"
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DB: ${REDIS_DB}
+      PUBSUB_ENABLED: ${PUBSUB_ENABLED}
+      PUBSUB_TYPE: ${PUBSUB_TYPE}
+      PUBSUB_NAMESPACE: ${PUBSUB_NAMESPACE}
+      SERVER_TYPE: ${SERVER_TYPE}
+    ports:
+      - '8081:8080'
+    expose:
+      - '8081'
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1;"]
+      interval: 19s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gate-keeper:
+    container_name: gate-keeper
+    image: bignya/gate-keeper:latest
+    restart: always
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DB: ${REDIS_DB}
+      ENVIRONMENT: "dev"
+      PUBSUB_ENABLED: ${PUBSUB_ENABLED}
+      PUBSUB_TYPE: ${PUBSUB_TYPE}
+      PUBSUB_NAMESPACE: ${PUBSUB_NAMESPACE}
+      GATEKEEPER_MODE: ${GATEKEEPER_MODE}
+      PROXY_TARGET: ${PROXY_TARGET}
+      SERVER_TYPE: ${SERVER_TYPE}
+    ports:
+      - '8082:8080'
+    expose:
+      - '8082'
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1;"]
+      interval: 19s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gatari-fe:
+    container_name: gatari-fe
+    image: bignya/gatari-fe:latest
+    restart: always
+    ports:
+      - '3000:3000'
+    expose:
+      - '3000'
+    depends_on:
+      go-admin:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '5432:5432'
+    expose:
+      - '5432'
+    volumes:
+      - go-admin-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis
+    restart: always
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - go-admin-redis-data:/data
+    ports:
+      - '6379:6379'
+    expose:
+      - '6379'
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  go-admin-postgres-data:
+    driver: local
+  go-admin-redis-data:
+    driver: local
