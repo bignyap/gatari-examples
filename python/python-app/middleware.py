@@ -54,6 +54,8 @@ class AuthAndGatekeeperMiddleware(BaseHTTPMiddleware):
                 raise ValueError("Missing 'realm'")
             logger.debug(f"Token realm: {realm}")
             return {"realm": realm, "payload": payload}
+        # try:
+        #     return {"realm": "wolfram", "payload": ""}
         except Exception as e:
             logger.warning(f"JWT error: {str(e)}")
             return JSONResponse({"detail": f"Invalid token: {str(e)}"}, status_code=401)
@@ -94,7 +96,7 @@ class AuthAndGatekeeperMiddleware(BaseHTTPMiddleware):
             }
 
             logger.debug(f"Recording usage for {realm} {method} {path}")
-            response = await self.http_client.post(f"{self.gatekeeper_url}/usage", json=usage_payload)
+            response = await self.http_client.post(f"{self.gatekeeper_url}/recordUsage", json=usage_payload)
 
             if response.status_code != 200:
                 logger.warning(f"Usage recording failed: {response.status_code} {response.text}")
